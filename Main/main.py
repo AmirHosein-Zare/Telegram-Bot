@@ -4,7 +4,8 @@ from decouple import config
 api_token = config("API_TOKEN")
 
 from telegram import Update, InputMediaPhoto
-from telegram.ext import CallbackContext, Updater, dispatcher, CommandHandler
+from telegram.ext import CallbackContext, Updater, dispatcher, CommandHandler, InlineQueryHandler, CallbackQueryHandler
+from telegram import InlineQueryResultArticle, InputTextMessageContent
 
 # requests library
 import requests
@@ -27,14 +28,14 @@ def start(update:Update, context:CallbackContext):
 Hello :)
 wellcome to IMDB_bot
 to get information about your favorite movie
-please enter the name of the movie:
 :)
     '''
     # Add buttons
     inline_markup = InlineKeyboardMarkup(inline_keys)
     update.message.reply_text(text=text, reply_markup=inline_markup)
 
-from package import getMovie, getStatus,getpic,getPicture
+# import Function from package
+from package import getMovie, getPicture
 def movie(update:Update, context:CallbackContext):
     chat_id = update.message.chat_id
     result = getMovie('Troll')
@@ -48,9 +49,21 @@ def movie(update:Update, context:CallbackContext):
     else:
         context.bot.send_message(chat_id, result[0]);
 
+#callbackquery function 
+def callBackQuery(update:Update, context:CallbackContext):
+    data = update.callback_query.data
+    if data == '1':
+        update.callback_query.answer("Enter your Movie Name:", show_alert=True)
+    elif data == '2':
+        update.callback_query.answer("About IMDB_bot", show_alert=True)
+    elif data == '3':
+        update.callback_query.answer("/cancel", show_alert=True)
+    else:
+        print("error")
 # set command for start
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('movie',movie))
+dispatcher.add_handler(CallbackQueryHandler(callBackQuery))
 
 # start bot to work
 updater.start_polling()
