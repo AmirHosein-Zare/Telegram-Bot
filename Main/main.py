@@ -26,7 +26,7 @@ please enter the name of the movie:
     '''
     context.bot.send_message(chat_id, text)
 
-from package import getMovie
+from package import getMovie, getStatus
 def movie(update:Update, context:CallbackContext):
     chat_id = update.message.chat_id
     result = getMovie('Troll')
