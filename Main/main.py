@@ -6,6 +6,7 @@ api_token = config("API_TOKEN")
 from telegram import Update, InputMediaPhoto
 from telegram.ext import CallbackContext, Updater, dispatcher, CommandHandler, InlineQueryHandler, CallbackQueryHandler
 from telegram import InlineQueryResultArticle, InputTextMessageContent
+from telegram.ext import Filters,MessageHandler
 
 # requests library
 import requests
@@ -36,7 +37,7 @@ to get information about your favorite movie
 
 # import Function from package
 from package import getMovie, getPicture
-def movie(update:Update, context:CallbackContext):
+def movie(update:Update, context:CallbackContext,search):
     chat_id = update.message.chat_id
     result = getMovie('Troll')
     media_group = []
@@ -49,21 +50,45 @@ def movie(update:Update, context:CallbackContext):
     else:
         context.bot.send_message(chat_id, result[0]);
 
+flag = False
+
 #callbackquery function 
 def callBackQuery(update:Update, context:CallbackContext):
     data = update.callback_query.data
+    global flag
     if data == '1':
-        update.callback_query.answer("Enter your Movie Name:", show_alert=True)
+        update.callback_query.answer("Enter your Movie Name:")
+        randMSG(update=update, context=context)
+        flag = True
     elif data == '2':
         update.callback_query.answer("About IMDB_bot", show_alert=True)
     elif data == '3':
         update.callback_query.answer("/cancel", show_alert=True)
     else:
         print("error")
+
+# random message function
+def randMSG(update, context):
+    chat_id = update.effective_chat.id
+    context.bot.send_message(chat_id, "Enter your movie Name:")
+
+
+# echo function
+def echo(update:Update, context:CallbackContext):
+    chat_id = update.message.chat_id
+    global flag
+    if flag == True:
+        text = update.message.text
+        context.bot.send_message(chat_id, "Searching ...")
+        movie(update=update, context=context, search=text)
+        flag = False
+
 # set command for start
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('movie',movie))
+dispatcher.add_handler(MessageHandler(None, echo))
 dispatcher.add_handler(CallbackQueryHandler(callBackQuery))
 
 # start bot to work
 updater.start_polling()
+updater.idle()
