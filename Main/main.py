@@ -39,7 +39,7 @@ to get information about your favorite movie
 from package import getMovie, getPicture
 def movie(update:Update, context:CallbackContext,search):
     chat_id = update.message.chat_id
-    result = getMovie('Troll')
+    result = getMovie(search)
     media_group = []
     if result[1] != "-1":
         text = result[0]
@@ -55,17 +55,25 @@ flag = False
 #callbackquery function 
 def callBackQuery(update:Update, context:CallbackContext):
     data = update.callback_query.data
+    chat_id = update.effective_chat.id
     global flag
+    text = '''
+IMDB_bot:
+
+This bot made with @awiir1
+
+    '''
     if data == '1':
         update.callback_query.answer("Enter your Movie Name:")
         randMSG(update=update, context=context)
         flag = True
     elif data == '2':
-        update.callback_query.answer("About IMDB_bot", show_alert=True)
+        update.callback_query.answer(text=text, show_alert=True)
+        context.bot.send_message(chat_id, text)
     elif data == '3':
-        update.callback_query.answer("/cancel", show_alert=True)
+        context.bot.send_message(chat_id, '/cancel')
     else:
-        print("error")
+        context.bot.send_message(chat_id, 'Try Again')
 
 # random message function
 def randMSG(update, context):
@@ -88,7 +96,7 @@ dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('movie',movie))
 dispatcher.add_handler(MessageHandler(None, echo))
 dispatcher.add_handler(CallbackQueryHandler(callBackQuery))
+dispatcher.add_handler(CommandHandler('cancel', start))
 
 # start bot to work
 updater.start_polling()
-updater.idle()
